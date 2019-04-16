@@ -281,11 +281,19 @@ struct PVSystem_IO
 	std::vector<ssc_number_t *> p_surfaceAzimuth; ///The azimuth of the surface [degrees]   
 	std::vector<ssc_number_t *> p_axisRotation;     
 	std::vector<ssc_number_t *> p_idealRotation; 
-	std::vector<ssc_number_t *> p_poaNominalFront;     
-	std::vector<ssc_number_t *> p_poaShadedFront;		
+	std::vector<ssc_number_t *> p_poaNominalFront;
+	std::vector<ssc_number_t *> p_poaNominalFrontBeam;
+	std::vector<ssc_number_t *> p_poaNominalFrontSky;
+	std::vector<ssc_number_t *> p_poaNominalFrontGnd;
+	std::vector<ssc_number_t *> p_poaShadedFront;
+	std::vector<ssc_number_t *> p_poaShadedFrontBeam;
+	std::vector<ssc_number_t *> p_poaShadedFrontSky;
+	std::vector<ssc_number_t *> p_poaShadedFrontGnd;
 	std::vector<ssc_number_t *> p_poaShadedSoiledFront;  
 	std::vector<ssc_number_t *> p_poaBeamFront; 
-	std::vector<ssc_number_t *> p_poaDiffuseFront; 
+	std::vector<ssc_number_t *> p_poaDiffuseFront;
+	std::vector<ssc_number_t *> p_poaSoiledFrontSky;
+	std::vector<ssc_number_t *> p_poaSoiledFrontGnd;
 	std::vector<ssc_number_t *> p_poaFront; 
 	std::vector<ssc_number_t *> p_poaTotal; 
 	std::vector<ssc_number_t *> p_poaRear; 
