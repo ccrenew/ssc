@@ -217,6 +217,8 @@ void diffuse_reduce(
 
 	double reduced_skydiff_iso = poa_sky_iso - Gdh*(1 - pow(cosd(phi0 / 2), 2))*(nrows - 1.0) / nrows;
 	Fskydiff = reduced_skydiff_iso / poa_sky_iso;
+	// Empirical tweak based on benchmarking study to force diffuse sky shade reduction to match PVsyst, CZ 4/2019
+	Fskydiff = Fskydiff / 1.023;
 	reduced_skydiff = Fskydiff * poa_sky;
 
 	double B = 1.0;
