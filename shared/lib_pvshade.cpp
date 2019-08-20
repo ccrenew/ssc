@@ -211,16 +211,34 @@ void diffuse_reduce(
 
 	// view factor  and shade derate calculations assume isotropic sky
 	double Gbh = Gb_nor * cosd(solzen); // beam irradiance on horizontal surface
-	double poa_sky_iso = Gdh * (1 + cosd(stilt)) / 2;
-
-	// sky diffuse reduction
-
-	double reduced_skydiff_iso = poa_sky_iso - Gdh*(1 - pow(cosd(phi0 / 2), 2))*(nrows - 1.0) / nrows;
-	Fskydiff = reduced_skydiff_iso / poa_sky_iso;
-	reduced_skydiff = Fskydiff * poa_sky;
+	// double poa_sky_iso = Gdh * (1 + cosd(stilt)) / 2;
 
 	double B = 1.0;
 	double R = B / gcr;
+
+	// sky diffuse reduction
+	double step = 1.0 / 1000.0;
+	double g = 0.0;
+	Fskydiff = 0.0;
+	for (int n = 0; n < 1000; n++)
+	{
+        g = n * step;
+        double arg = (1 / tand(stilt)) - (1 / (gcr * sind(stilt) * (1 - g)));
+        double gamma = (-M_PI / 2) + atan(arg);
+        double Asky_shade = M_PI + M_PI / pow((1 + pow(tan(stilt * DTOR + gamma), 2)), 0.5);
+        double Asky = M_PI + M_PI / pow((1 + pow(tan(stilt * DTOR), 2)), 0.5);
+        if (isnan(Asky_shade))
+        {
+            Asky_shade = Asky;
+        }
+        else if ((stilt * DTOR + gamma) > (M_PI / 2))
+        {
+            Asky_shade = 2 * M_PI - Asky_shade;
+        }
+        else {}
+        Fskydiff += (Asky_shade / Asky) * step;
+	}
+	reduced_skydiff = Fskydiff * poa_sky;
 
 	double solalt = 90 - solzen;
 
