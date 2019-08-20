@@ -2,7 +2,7 @@
 *  Copyright 2017 Alliance for Sustainable Energy, LLC
 *
 *  NOTICE: This software was developed at least in part by Alliance for Sustainable Energy, LLC
-*  (“Alliance”) under Contract No. DE-AC36-08GO28308 with the U.S. Department of Energy and the U.S.
+*  (ï¿½Allianceï¿½) under Contract No. DE-AC36-08GO28308 with the U.S. Department of Energy and the U.S.
 *  The Government retains for itself and others acting on its behalf a nonexclusive, paid-up,
 *  irrevocable worldwide license in the software to reproduce, prepare derivative works, distribute
 *  copies to the public, perform publicly and display publicly, and to permit others to do so.
@@ -26,8 +26,8 @@
 *  4. Redistribution of this software, without modification, must refer to the software by the same
 *  designation. Redistribution of a modified version of this software (i) may not refer to the modified
 *  version by the same designation, or by any confusingly similar designation, and (ii) must refer to
-*  the underlying software originally provided by Alliance as “System Advisor Model” or “SAM”. Except
-*  to comply with the foregoing, the terms “System Advisor Model”, “SAM”, or any confusingly similar
+*  the underlying software originally provided by Alliance as ï¿½System Advisor Modelï¿½ or ï¿½SAMï¿½. Except
+*  to comply with the foregoing, the terms ï¿½System Advisor Modelï¿½, ï¿½SAMï¿½, or any confusingly similar
 *  designation may not be used to refer to any modified version of this software or any modified
 *  version of the underlying software originally provided by Alliance without the prior written consent
 *  of Alliance.
@@ -885,47 +885,51 @@ bool iec61853_module_t::operator() ( pvinput_t &input, double TcellC, double opv
 	/* initialize output first */
 	out.Power = out.Voltage = out.Current = out.Efficiency = out.Voc_oper = out.Isc_oper = 0.0;
 	
-	double poa, tpoa, iamf;
+	double iamf;
 	iamf = 1;
 
-	if( input.radmode != 3 ){ // Skip module cover effects if using POA reference cell data 
+	double poa_front, poa_total, poa_eff_front, poa_eff_total;
+	if( input.radmode != 3 ){ // Skip module cover effects if using POA reference cell data
 		// plane of array irradiance, W/m2
-		poa = input.Ibeam + input.Idiff + input.Ignd; 
+		poa_front = input.Ibeam + input.Idiff + input.Ignd;
+		poa_total = poa_front + input.Irear; // Note the rear irradiance has already taken bifaciality into consideration
 
 		// transmitted poa through module cover
-		tpoa = poa;
+		poa_eff_front = poa_front;
 
 		if ( input.IncAng > AOI_MIN && input.IncAng < AOI_MAX )
 		{
 			iamf = iam( input.IncAng, GlassAR );
-			tpoa = poa - ( 1.0 - iamf )*input.Ibeam*cos(input.IncAng*3.1415926/180.0);
-			if( tpoa < 0.0 ) tpoa = 0.0;
-			if( tpoa > poa ) tpoa = poa;
+			poa_eff_front = poa_front - ( 1.0 - iamf )*input.Ibeam*cos(input.IncAng*3.1415926/180.0);
+			if( poa_eff_front < 0.0 ) poa_eff_front = 0.0;
+			if( poa_eff_front > poa_front ) poa_eff_front = poa_front;
 		}
 	
 		// spectral effect via AM modifier
 		double ama = air_mass_modifier( input.Zenith, input.Elev, AMA );
-		tpoa *= ama;
+		poa_eff_front *= ama;
+		poa_eff_total = poa_eff_front + input.Irear * ama;
 	} 
 	else if(input.usePOAFromWF){ // Check if decomposed POA is required, if not use weather file POA directly
-		tpoa = poa = input.poaIrr;
+		poa_total = poa_eff_total = input.poaIrr;
 	} 
 	else { // Otherwise use decomposed POA
-		tpoa = poa = input.Ibeam + input.Idiff + input.Ignd;
+		poa_total = input.poaIrr;
+		poa_eff_total = input.Ibeam + input.Idiff + input.Ignd + input.Irear;
 	}
 	
 	double Tc = input.Tdry + 273.15;
-	if ( tpoa >= 1.0 )
+	if ( poa_eff_total >= 1.0 )
 	{
 		Tc = TcellC + 273.15;
 		double q = 1.6e-19;
 		double k = 1.38e-23;
 		double aop = NcellSer*n*k*Tc/q;
-		double Ilop = tpoa/1000*(Il + alphaIsc*(Tc-298.15));
+		double Ilop = poa_eff_total/1000*(Il + alphaIsc*(Tc-298.15));
 		double Egop = (1-0.0002677*(Tc-298.15))*Egref;
 		double Ioop = Io*pow(Tc/298.15,3.0)*exp( 11600 * (Egref/298.15 - Egop/Tc));
-		double Rsop = D1 + D2*(Tc-298.15) + D3*( 1-tpoa/1000.0)*pow(1000.0/poa,2.0);
-		double Rshop = C1 + C2*( pow(1000.0/tpoa,C3)-1 );
+		double Rsop = D1 + D2*(Tc-298.15) + D3*( 1-poa_eff_total/1000.0)*pow(1000.0/poa_total,2.0);
+		double Rshop = C1 + C2*( pow(1000.0/poa_eff_total,C3)-1 );
 					
 
 		// at some very low irradiances, these parameters can blow up due to
@@ -956,7 +960,7 @@ bool iec61853_module_t::operator() ( pvinput_t &input, double TcellC, double opv
 		out.Power = P;
 		out.Voltage  = V;
 		out.Current = I;
-		out.Efficiency = P/(Area*poa);
+		out.Efficiency = P/(Area*poa_total);
 		out.Voc_oper = V_oc;
 		out.Isc_oper = I_sc;
 		out.CellTemp = Tc - 273.15;
