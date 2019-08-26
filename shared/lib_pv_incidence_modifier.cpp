@@ -122,7 +122,7 @@ double calculateIrradianceThroughCoverDeSoto(double theta, double theta_z, doubl
 	return Geff_total;
 }
 
-double IAMvalue_ASHRAE(double b0, double theta)
+double iamASHRAE(double b0, double theta)
 {
 	return (1 - b0 * (1 / cos(theta) - 1));
 }

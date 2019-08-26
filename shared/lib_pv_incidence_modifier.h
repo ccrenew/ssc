@@ -36,7 +36,7 @@ double iam_nonorm(double theta_deg, bool ar_glass);  // non-normalized cover los
 *
 */
 
-double IAMvalue_ASHRAE(double b0, double theta);
+double iamASHRAE(double b0, double theta);
 
 double iamSjerpsKoomen(double n, double incidenceAngleRadians);
 
