@@ -1774,8 +1774,8 @@ void irrad::getBackSurfaceIrradiances(double pvBackShadeFraction, double rowToRo
 		for (size_t j = 0; j != iStopIso; j++)
 		{
             theta = 90.0 - j;
-			rearIrradiance[i] += 0.5 * (cos(j * DTOR) - cos((j + 1)*DTOR)) * iamASHRAE(0.04, theta * DTOR)* isotropicSkyDiffuse;
-			rearAverageIrradianceSky += 0.5 * (cos(j * DTOR) - cos((j + 1)*DTOR)) * iamASHRAE(0.04, theta * DTOR)* isotropicSkyDiffuse;
+			rearIrradiance[i] += 0.5 * (cos(j * DTOR) - cos((j + 1)*DTOR)) * iamASHRAE(0.04, theta * DTOR) * isotropicSkyDiffuse;
+			rearAverageIrradianceSky += 0.5 * (cos(j * DTOR) - cos((j + 1)*DTOR)) * iamASHRAE(0.04, theta * DTOR) * isotropicSkyDiffuse;
 		}
 
 		// Add reflections from PV module front surfaces
