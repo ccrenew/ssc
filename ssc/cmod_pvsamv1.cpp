@@ -1840,7 +1840,7 @@ void cm_pvsamv1::exec( ) throw (compute_module::general_error)
 					if (iyear == 0)
 					{
 						//Gross DC power
-						dc_gross[nn] += Subarrays[nn]->dcPowerSubarray*util::watt_to_kilowatt*ts_hour; //power W to	energy kWh
+						dc_gross[nn] = Subarrays[nn]->dcPowerSubarray*util::watt_to_kilowatt*ts_hour; //power W to	energy kWh
 						PVSystem->p_dcPowerGross[nn][idx] = (ssc_number_t)dc_gross[nn];
 						//Add to annual MPPT clipping
 						annualMpptVoltageClipping += mpptVoltageClipping[nn]*util::watt_to_kilowatt*ts_hour; //power W to energy kWh
