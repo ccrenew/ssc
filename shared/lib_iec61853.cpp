@@ -885,8 +885,11 @@ bool iec61853_module_t::operator() ( pvinput_t &input, double TcellC, double opv
 	/* initialize output first */
 	out.Power = out.Voltage = out.Current = out.Efficiency = out.Voc_oper = out.Isc_oper = 0.0;
 	
-	double iamf;
-	iamf = 1;
+	double iamf_beam = 1;
+	double iamf_diff = 1;
+	double iamf_gnd = 1;
+
+	double AOIModifier = 1;
 
 	double poa_front, poa_total, poa_eff_front, poa_eff_total;
 	if( input.radmode != 3 ){ // Skip module cover effects if using POA reference cell data
@@ -894,21 +897,22 @@ bool iec61853_module_t::operator() ( pvinput_t &input, double TcellC, double opv
 		poa_front = input.Ibeam + input.Idiff + input.Ignd;
 		poa_total = poa_front + input.Irear; // Note the rear irradiance has already taken bifaciality into consideration
 
-		// transmitted poa through module cover
-		poa_eff_front = poa_front;
+		iamf_beam = iam( input.IncAng, GlassAR );
+		// Add consideration of sky diffuse and ground components to match both the cec and mlm module models - CZ 2019
+		double theta_diff = (59.7 - 0.1388 * input.Tilt + 0.001497 * pow(input.Tilt, 2)); // from [2], equation 5.4.2
+	    double theta_gnd = (90.0 - 0.5788 * input.Tilt + 0.002693 * pow(input.Tilt, 2)); // from [2], equation 5.4.1
+		iamf_diff = iam( theta_diff, GlassAR );
+		iamf_gnd = iam( theta_gnd, GlassAR );
 
-		if ( input.IncAng > AOI_MIN && input.IncAng < AOI_MAX )
-		{
-			iamf = iam( input.IncAng, GlassAR );
-			poa_eff_front = poa_front - ( 1.0 - iamf )*input.Ibeam;
-			if( poa_eff_front < 0.0 ) poa_eff_front = 0.0;
-			if( poa_eff_front > poa_front ) poa_eff_front = poa_front;
-		}
+        poa_eff_front = iamf_beam * input.Ibeam + iamf_diff * input.Idiff + iamf_gnd * input.Ignd;
+        if( poa_eff_front < 0.0 ) poa_eff_front = 0.0;
+        if( poa_eff_front > poa_front ) poa_eff_front = poa_front;
 	
 		// spectral effect via AM modifier
 		double ama = air_mass_modifier( input.Zenith, input.Elev, AMA );
 		poa_eff_front *= ama;
 		poa_eff_total = poa_eff_front + input.Irear * ama;
+		AOIModifier = poa_eff_front/poa_front;
 	} 
 	else if(input.usePOAFromWF){ // Check if decomposed POA is required, if not use weather file POA directly
 		poa_total = poa_eff_total = input.poaIrr;
@@ -964,7 +968,7 @@ bool iec61853_module_t::operator() ( pvinput_t &input, double TcellC, double opv
 		out.Voc_oper = V_oc;
 		out.Isc_oper = I_sc;
 		out.CellTemp = Tc - 273.15;
-		out.AOIModifier = poa_eff_front/poa_front;
+		out.AOIModifier = AOIModifier;
 	}
 
 	return out.Power >= 0;
