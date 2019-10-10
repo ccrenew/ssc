@@ -900,7 +900,7 @@ bool iec61853_module_t::operator() ( pvinput_t &input, double TcellC, double opv
 		if ( input.IncAng > AOI_MIN && input.IncAng < AOI_MAX )
 		{
 			iamf = iam( input.IncAng, GlassAR );
-			poa_eff_front = poa_front - ( 1.0 - iamf )*input.Ibeam*cos(input.IncAng*3.1415926/180.0);
+			poa_eff_front = poa_front - ( 1.0 - iamf )*input.Ibeam;
 			if( poa_eff_front < 0.0 ) poa_eff_front = 0.0;
 			if( poa_eff_front > poa_front ) poa_eff_front = poa_front;
 		}
