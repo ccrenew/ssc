@@ -928,7 +928,7 @@ bool iec61853_module_t::operator() ( pvinput_t &input, double TcellC, double opv
 		double Ilop = poa_eff_total/1000*(Il + alphaIsc*(Tc-298.15));
 		double Egop = (1-0.0002677*(Tc-298.15))*Egref;
 		double Ioop = Io*pow(Tc/298.15,3.0)*exp( 11600 * (Egref/298.15 - Egop/Tc));
-		double Rsop = D1 + D2*(Tc-298.15) + D3*( 1-poa_eff_total/1000.0)*pow(1000.0/poa_total,2.0);
+		double Rsop = D1 + D2*(Tc-298.15) + D3*( 1-poa_eff_total/1000.0)*pow(1000.0/poa_eff_total,2.0);
 		double Rshop = C1 + C2*( pow(1000.0/poa_eff_total,C3)-1 );
 					
 
